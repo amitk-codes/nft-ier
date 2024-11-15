@@ -5,6 +5,8 @@ import {
   getKeypairFromFile,
 } from "@solana-developers/helpers";
 import { clusterApiUrl, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
 
 // loading keypair 
 const user = await getKeypairFromFile();
@@ -23,3 +25,7 @@ await airdropIfRequired(
   1 * LAMPORTS_PER_SOL,
   0.5 * LAMPORTS_PER_SOL
 );
+
+const umi = createUmi(connection.rpcEndpoint);
+umi.use(mplTokenMetadata);
+
