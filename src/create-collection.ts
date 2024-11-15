@@ -2,12 +2,14 @@ import dotenv from "dotenv";
 dotenv.config();
 import {
   airdropIfRequired,
+  getExplorerLink,
   getKeypairFromFile,
 } from "@solana-developers/helpers";
 import { clusterApiUrl, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
   createNft,
+  fetchDigitalAsset,
   mplTokenMetadata,
 } from "@metaplex-foundation/mpl-token-metadata";
 import {
@@ -52,3 +54,13 @@ const tx = await createNft(umi, {
 });
 
 await tx.sendAndConfirm(umi);
+
+const fetchedCollection = await fetchDigitalAsset(
+  umi,
+  collectionMint.publicKey
+);
+
+console.log(
+  "COLLECTION CREATED, Click to view on explorer::",
+  getExplorerLink("address", fetchedCollection.mint.publicKey, clusterNetwork)
+);
