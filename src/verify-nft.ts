@@ -2,11 +2,16 @@ import dotenv from "dotenv";
 dotenv.config();
 import {
   airdropIfRequired,
+  getExplorerLink,
   getKeypairFromFile,
 } from "@solana-developers/helpers";
 import { clusterApiUrl, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
+import {
+  findMetadataPda,
+  mplTokenMetadata,
+  verifyCollectionV1,
+} from "@metaplex-foundation/mpl-token-metadata";
 import { keypairIdentity, publicKey } from "@metaplex-foundation/umi";
 
 // loading keypair
@@ -42,3 +47,16 @@ const nftPublickey = publicKey(process.env.CREATED_NFT_ADDRESS || "");
 console.log("COLLECTION BEING USED::", collectionPublickey);
 
 console.log("NFT BEING USED::", nftPublickey);
+
+const tx = await verifyCollectionV1(umi, {
+  metadata: findMetadataPda(umi, { mint: nftPublickey }),
+  collectionMint: collectionPublickey,
+  authority: umi.identity,
+});
+
+await tx.sendAndConfirm(umi);
+
+console.log(
+  `NFT ${nftPublickey} is successfully verified by collection ${collectionPublickey}. Click to view on Explorer::`,
+  getExplorerLink("address", nftPublickey, clusterNetwork)
+);
