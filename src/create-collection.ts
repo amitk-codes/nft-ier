@@ -6,9 +6,17 @@ import {
 } from "@solana-developers/helpers";
 import { clusterApiUrl, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
+import {
+  createNft,
+  mplTokenMetadata,
+} from "@metaplex-foundation/mpl-token-metadata";
+import {
+  generateSigner,
+  keypairIdentity,
+  percentAmount,
+} from "@metaplex-foundation/umi";
 
-// loading keypair 
+// loading keypair
 const user = await getKeypairFromFile();
 
 const clusterNetwork =
@@ -27,5 +35,20 @@ await airdropIfRequired(
 );
 
 const umi = createUmi(connection.rpcEndpoint);
-umi.use(mplTokenMetadata);
+umi.use(mplTokenMetadata());
 
+const umiKeypair = umi.eddsa.createKeypairFromSecretKey(user.secretKey);
+umi.use(keypairIdentity(umiKeypair));
+
+const collectionMint = generateSigner(umi);
+
+const tx = await createNft(umi, {
+  mint: collectionMint,
+  name: process.env.COLLECTION_NAME || "",
+  symbol: process.env.COLLECTION_SYMBOL,
+  uri: process.env.COLLECTION_URI || "",
+  sellerFeeBasisPoints: percentAmount(0),
+  isCollection: true,
+});
+
+await tx.sendAndConfirm(umi);
